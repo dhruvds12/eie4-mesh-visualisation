@@ -2,7 +2,7 @@
 import SimulationMap from './components/SimulationMap';
 
 // Import the entire log file as a raw string
-import logData from './assets/log_2025-01-29_23-17-25.log?raw';
+import logData from './assets/log_2025-01-31_10-29-37.log?raw';
 
 function App() {
   return (
