@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 
-// Define the shape of a node in the simulation.
+// Node struct
 export interface NodeState {
   node_id: string;
-  x: number;
-  y: number;
+  x: number; // x coorodinates of the node
+  y: number; // y coordinates of the node
   routingTable?: Record<string, { hops: number; via: string }>;
 }
 
@@ -33,7 +33,7 @@ const initialState: SimulationState = {
   events: [],
 };
 
-// The reducer updates the simulation state in response to actions.
+// The reducer updates the simulation state in response to actions.a
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
   switch (action.type) {
     case 'NODE_JOINED': {
@@ -60,18 +60,24 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
   }
 }
 
-// Define the shape of the context value.
+// Create the context, provides the simulation state and the dispatch function to all components in the application tree
+// Context is a way to pass data through the component tree without having to pass props down manually at each level.
 interface SimulationContextType {
   state: SimulationState;
   dispatch: React.Dispatch<SimulationAction>;
 }
 
+// Create a context of simulation state and the dispatch function therefore these are available to all components in the application tree
 const SimulationStateContext = createContext<SimulationContextType | undefined>(undefined);
 
+// Prop (property) way to pass data froma  parent component to a child component 
+// In this case the children prop is of type ReactNode therefore any valid react component can be the child and has access to context
 interface SimulationProviderProps {
   children: ReactNode;
 }
 
+// wraps its children making the simulation and dispatch function available via the context
+// Any component that is wrapped by simulationProvider can access context using useSimulationState
 export const SimulationProvider: React.FC<SimulationProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(simulationReducer, initialState);
 
@@ -113,12 +119,14 @@ export const SimulationProvider: React.FC<SimulationProviderProps> = ({ children
     };
 
     return () => {
-      // console.log("Cleaning up WebSocket");
-      // ws.close();
+      console.log("Cleaning up WebSocket");
+      ws.close();
+      // causes websocket to disconnect and reconnect in Strict Mode this is because components get mounted, unmounted and mounted
     };
   }, []);
 
   return (
+    // provides the context to it's children to access. 
     <SimulationStateContext.Provider value={{ state, dispatch }}>
       {children}
     </SimulationStateContext.Provider>
