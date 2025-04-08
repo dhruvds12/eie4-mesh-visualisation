@@ -49,7 +49,34 @@ const LiveSimulationMap: React.FC = () => {
                     <div>
                       <strong>ID:</strong> {node.node_id}
                       <br />
-                      {/* Add any additional node details here */}
+                      <strong>Routing Table:</strong>
+                          <table
+                            style={{
+                              width: "100%",
+                              borderCollapse: "collapse",
+                              marginTop: "4px",
+                              textAlign: "left",
+                            }}
+                          >
+                            <thead>
+                              <tr>
+                                <th>Dest</th>
+                                <th>Hops</th>
+                                <th>Via</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {Object.entries(node.routingTable ?? {}).map(([destId, route]) => (
+                                  <tr key={destId}>
+                                    <td>{destId}</td>
+                                    <td>{route.hops ?? "-"}</td>
+                                    <td>{route.via ?? "-"}</td>
+                                  </tr>
+                                )
+                              )}
+                            </tbody>
+                          </table>
+  
                     </div>
                   </Popup>
                 </Marker>

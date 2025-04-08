@@ -5,7 +5,7 @@ export interface NodeState {
   node_id: string;
   x: number; // x coorodinates of the node
   y: number; // y coordinates of the node
-  routingTable?: Record<string, { hops: number; via: string }>;
+  routingTable: Record<string, { hops: number; via: string }>;
 }
 
 
@@ -25,7 +25,18 @@ export interface SimulationEvent {
 // Define the supported action types.
 export type SimulationAction =
   | { type: 'NODE_JOINED'; payload: NodeState }
-  | { type: 'NODE_LEFT'; payload: { node_id: string } };
+  | { type: 'NODE_LEFT'; payload: { node_id: string } }
+  | {
+    type: 'ROUTING_TABLE_UPDATED';
+    payload: {
+      node_id: string;
+      routing_table: {
+        Destination: string;
+        NextHop: string;
+        HopCount: number;
+      };
+    };
+  };
 
 // The initial state for the simulation.
 const initialState: SimulationState = {
@@ -37,13 +48,17 @@ const initialState: SimulationState = {
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
   switch (action.type) {
     case 'NODE_JOINED': {
+      const newNode: NodeState = {
+        ...action.payload,
+        routingTable: action.payload.routingTable || {}
+      };
       return {
         ...state,
         nodes: {
           ...state.nodes,
-          [action.payload.node_id]: action.payload,
+          [newNode.node_id]: newNode,
         },
-        events: [...state.events, { type: action.type, payload: action.payload, timestamp: Date.now() }],
+        events: [...state.events, { type: action.type, payload: newNode, timestamp: Date.now() }],
       };
     }
     case 'NODE_LEFT': {
@@ -54,6 +69,34 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
         nodes: newNodes,
         events: [...state.events, { type: action.type, payload: action.payload, timestamp: Date.now() }],
       };
+    }
+    case 'ROUTING_TABLE_UPDATED': {
+      const { node_id, routing_table } = action.payload
+      const newNodes = { ...state.nodes }
+
+      if (newNodes[node_id]) {
+        const currentRoutingTable = newNodes[node_id].routingTable
+          ? { ...newNodes[node_id].routingTable } // if true take a copy
+          : {}; // if false empty object
+
+        currentRoutingTable[routing_table.Destination] = {
+          hops: routing_table.HopCount,
+          via: routing_table.NextHop,
+        };
+
+        newNodes[node_id] = {
+          ...newNodes[node_id],
+          routingTable: currentRoutingTable
+        }
+      } else {
+        console.error(`Node ${node_id} not found for ROUTING_TABLE_UPDATED`);
+      }
+      return {
+        ...state,
+        nodes: newNodes,
+        events: [...state.events, { type: action.type, payload: action.payload, timestamp: Date.now() }],
+      };
+
     }
     default:
       return state;
@@ -102,8 +145,9 @@ export const SimulationProvider: React.FC<SimulationProviderProps> = ({ children
           dispatch({ type: 'NODE_JOINED', payload: data });
         } else if (data.type === "NODE_LEFT") {
           dispatch({ type: 'NODE_LEFT', payload: data });
+        } else if (data.type === "ROUTING_TABLE_UPDATED") {
+          dispatch({ type: 'ROUTING_TABLE_UPDATED', payload: data })
         }
-        // Additional event handling...
       } catch (err) {
         console.error("Error processing event:", err);
       }
