@@ -36,7 +36,8 @@ export type SimulationAction =
         HopCount: number;
       };
     };
-  };
+  }
+  | { type: 'MOVED_NODE'; payload: { node_id: string, x: number, y: number}}
 
 // The initial state for the simulation.
 const initialState: SimulationState = {
@@ -98,6 +99,20 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       };
 
     }
+    case 'MOVED_NODE': {
+      const newNodes = { ...state.nodes }
+      if (newNodes[action.payload.node_id]) {
+        newNodes[action.payload.node_id].x = action.payload.x
+        newNodes[action.payload.node_id].y = action.payload.y
+      } else {
+        console.error(`Node ${action.payload.node_id} not found for MOVED_NODE`);
+      }
+      return {
+        ...state,
+        nodes: newNodes,
+        events: [...state.events, { type: action.type, payload: action.payload, timestamp: Date.now() }],
+      };
+    }
     default:
       return state;
   }
@@ -147,6 +162,9 @@ export const SimulationProvider: React.FC<SimulationProviderProps> = ({ children
           dispatch({ type: 'NODE_LEFT', payload: data });
         } else if (data.type === "ROUTING_TABLE_UPDATED") {
           dispatch({ type: 'ROUTING_TABLE_UPDATED', payload: data })
+        } else if (data.type === 'MOVED_NODE') {
+          console.log("Processing moved_node")
+          dispatch({ type: 'MOVED_NODE', payload: data})
         }
       } catch (err) {
         console.error("Error processing event:", err);
