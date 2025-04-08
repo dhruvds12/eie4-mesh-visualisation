@@ -34,11 +34,11 @@ const defaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = defaultIcon;
 
-interface SimulationMapProps {
+interface LogSimulationMapProps {
   logData: string;
 }
 
-const SimulationMap: React.FC<SimulationMapProps> = ({ logData }) => {
+const LogSimulationMap: React.FC<LogSimulationMapProps> = ({ logData }) => {
   const simulationStates: SimulationState[] = useMemo(
     () => buildSimulationStates(logData),
     [logData]
@@ -208,4 +208,4 @@ const SimulationMap: React.FC<SimulationMapProps> = ({ logData }) => {
   );
 };
 
-export default SimulationMap;
+export default LogSimulationMap;
