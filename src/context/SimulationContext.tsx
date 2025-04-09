@@ -6,6 +6,7 @@ export interface NodeState {
   x: number; // x coorodinates of the node
   y: number; // y coordinates of the node
   routingTable: Record<string, { hops: number; via: string }>;
+  virtual: boolean;
 }
 
 

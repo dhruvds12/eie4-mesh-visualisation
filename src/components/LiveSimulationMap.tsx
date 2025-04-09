@@ -1,6 +1,6 @@
 import React from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
+import L, { icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSimulationState } from "../context/SimulationContext";
 import { Box, Paper, Stack, Typography } from "@mui/material";
@@ -12,7 +12,17 @@ const defaultIcon = L.icon({
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
-L.Marker.prototype.options.icon = defaultIcon;
+
+
+var redIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  // popupAnchor: [1, -34],
+  // shadowSize: [41, 41]
+});
+
 
 function convertXYToLatLng(x: number, y: number): [number, number] {
   const IMPERIAL_COLLEGE_LAT = 51.4988;
@@ -43,40 +53,45 @@ const LiveSimulationMap: React.FC = () => {
             {nodes.map((node) => {
               // Assumes that node has properties: node_id, x, and y.
               const [lat, lng] = convertXYToLatLng(node.x, node.y);
+              const markerIcon = node.virtual ? defaultIcon : redIcon;
+              const nodeTypeText = node.virtual ? "Virtual Node" : "Physical Node";
+
               return (
-                <Marker key={node.node_id} position={[lat, lng]}>
+                <Marker key={node.node_id} position={[lat, lng]} icon={markerIcon}>
                   <Popup>
                     <div>
+                      {nodeTypeText}
+                      <br />
                       <strong>ID:</strong> {node.node_id}
                       <br />
                       <strong>Routing Table:</strong>
-                          <table
-                            style={{
-                              width: "100%",
-                              borderCollapse: "collapse",
-                              marginTop: "4px",
-                              textAlign: "left",
-                            }}
-                          >
-                            <thead>
-                              <tr>
-                                <th>Dest</th>
-                                <th>Hops</th>
-                                <th>Via</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {Object.entries(node.routingTable ?? {}).map(([destId, route]) => (
-                                  <tr key={destId}>
-                                    <td>{destId}</td>
-                                    <td>{route.hops ?? "-"}</td>
-                                    <td>{route.via ?? "-"}</td>
-                                  </tr>
-                                )
-                              )}
-                            </tbody>
-                          </table>
-  
+                      <table
+                        style={{
+                          width: "100%",
+                          borderCollapse: "collapse",
+                          marginTop: "4px",
+                          textAlign: "left",
+                        }}
+                      >
+                        <thead>
+                          <tr>
+                            <th>Dest</th>
+                            <th>Hops</th>
+                            <th>Via</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(node.routingTable ?? {}).map(([destId, route]) => (
+                            <tr key={destId}>
+                              <td>{destId}</td>
+                              <td>{route.hops ?? "-"}</td>
+                              <td>{route.via ?? "-"}</td>
+                            </tr>
+                          )
+                          )}
+                        </tbody>
+                      </table>
+
                     </div>
                   </Popup>
                 </Marker>
