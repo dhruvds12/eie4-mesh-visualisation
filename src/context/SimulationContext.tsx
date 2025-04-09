@@ -27,7 +27,7 @@ export type SimulationAction =
   | { type: 'NODE_JOINED'; payload: NodeState }
   | { type: 'NODE_LEFT'; payload: { node_id: string } }
   | {
-    type: 'ROUTING_TABLE_UPDATED';
+    type: 'ADD_ROUTE_ENTRY';
     payload: {
       node_id: string;
       routing_table: {
@@ -37,7 +37,18 @@ export type SimulationAction =
       };
     };
   }
-  | { type: 'MOVED_NODE'; payload: { node_id: string, x: number, y: number}}
+  | { type: 'MOVED_NODE'; payload: { node_id: string, x: number, y: number } }
+  | {
+    type: 'REMOVED_ROUTE_ENTRY';
+    payload: {
+      node_id: string;
+      routing_table: {
+        Destination: string;
+        NextHop: string;
+        HopCount: number;
+      };
+    };
+  };
 
 // The initial state for the simulation.
 const initialState: SimulationState = {
@@ -71,7 +82,7 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
         events: [...state.events, { type: action.type, payload: action.payload, timestamp: Date.now() }],
       };
     }
-    case 'ROUTING_TABLE_UPDATED': {
+    case 'ADD_ROUTE_ENTRY': {
       const { node_id, routing_table } = action.payload
       const newNodes = { ...state.nodes }
 
@@ -112,6 +123,30 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
         nodes: newNodes,
         events: [...state.events, { type: action.type, payload: action.payload, timestamp: Date.now() }],
       };
+    }
+    case 'REMOVED_ROUTE_ENTRY': {
+      const { node_id, routing_table } = action.payload
+      const newNodes = { ...state.nodes }
+
+      if (newNodes[node_id]) {
+        const currentRoutingTable = newNodes[node_id].routingTable
+          ? { ...newNodes[node_id].routingTable }
+          : {};
+
+        delete currentRoutingTable[routing_table.Destination]
+
+        newNodes[node_id] = {
+          ...newNodes[node_id],
+          routingTable: currentRoutingTable
+        }
+      } else {
+        console.error(`Node ${node_id} not found for REMOVED_ROUTE_ENTRY`);
+      }
+      return {
+        ...state,
+        nodes: newNodes,
+        events: [...state.events, { type: action.type, payload: action.payload, timestamp: Date.now() }]
+      }
     }
     default:
       return state;
@@ -160,11 +195,13 @@ export const SimulationProvider: React.FC<SimulationProviderProps> = ({ children
           dispatch({ type: 'NODE_JOINED', payload: data });
         } else if (data.type === "NODE_LEFT") {
           dispatch({ type: 'NODE_LEFT', payload: data });
-        } else if (data.type === "ROUTING_TABLE_UPDATED") {
-          dispatch({ type: 'ROUTING_TABLE_UPDATED', payload: data })
+        } else if (data.type === "ADD_ROUTE_ENTRY") {
+          dispatch({ type: 'ADD_ROUTE_ENTRY', payload: data })
         } else if (data.type === 'MOVED_NODE') {
-          console.log("Processing moved_node")
-          dispatch({ type: 'MOVED_NODE', payload: data})
+          // console.log("Processing moved_node")
+          dispatch({ type: 'MOVED_NODE', payload: data })
+        } else if (data.type === 'REMOVED_ROUTE_ENTRY') {
+          dispatch({ type: 'REMOVED_ROUTE_ENTRY', payload: data })
         }
       } catch (err) {
         console.error("Error processing event:", err);
