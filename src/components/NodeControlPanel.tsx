@@ -6,10 +6,10 @@ const NodeControlPanel: React.FC = () => {
     const [latMove, setLatMove] = useState(0);
     const [long, setLong] = useState(0);
     const [longMove, setLongMove] = useState(0);
-    const [nodeId, setNodeId] = useState('');
-    const [moveNodeId, setMoveNodeId] = useState('');
-    const [senderNodeId, setSenderNodeId] = useState('')
-    const [destNodeId, setDestNodeId] = useState('')
+    const [nodeId, setNodeId] = useState(0);
+    const [moveNodeId, setMoveNodeId] = useState(0);
+    const [senderNodeId, setSenderNodeId] = useState(0)
+    const [destNodeId, setDestNodeId] = useState(0)
     const [message, setMessage] = useState('')
 
     const handleCreate = async () => {
@@ -56,17 +56,17 @@ const NodeControlPanel: React.FC = () => {
             <button onClick={handleCreate}>Create Node</button>
 
             <h3>Remove Node</h3>
-            <input type="text" value={nodeId} onChange={(e) => setNodeId(e.target.value)} placeholder="Node ID" />
+            <input type="text" value={nodeId} onChange={(e) => setNodeId(Number(e.target.value))} placeholder="Node ID" />
             <button onClick={handleRemove}>Remove Node</button>
 
             <h3>Send Message</h3>
-            <input type="text" value={senderNodeId} onChange={(e) => setSenderNodeId(e.target.value)} placeholder="Sender Node ID"/>
-            <input type="text" value={destNodeId} onChange={(e) => setDestNodeId(e.target.value)} placeholder="Destination node ID"/>
+            <input type="text" value={senderNodeId} onChange={(e) => setSenderNodeId(Number(e.target.value))} placeholder="Sender Node ID"/>
+            <input type="text" value={destNodeId} onChange={(e) => setDestNodeId(Number(e.target.value))} placeholder="Destination node ID"/>
             <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Message ..."/>
             <button onClick={handleSendMessage}>Send Message</button>
 
             <h3>Move Node</h3>
-            <input type="text" value={moveNodeId} onChange={(e) => setMoveNodeId(e.target.value)} placeholder="Node ID"/>
+            <input type="text" value={moveNodeId} onChange={(e) => setMoveNodeId(Number(e.target.value))} placeholder="Node ID"/>
             <input type="number" value={latMove} onChange={(e) => setLatMove(Number(e.target.value))} placeholder="Latitude" />
             <input type="number" value={longMove} onChange={(e) => setLongMove(Number(e.target.value))} placeholder="Longitude" />
             <button onClick={handleMove}>Move Node</button>

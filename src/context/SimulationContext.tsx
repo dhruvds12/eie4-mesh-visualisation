@@ -2,17 +2,17 @@ import React, { createContext, useContext, useReducer, useEffect, ReactNode } fr
 
 // Node struct
 export interface NodeState {
-  node_id: string;
+  node_id: number;
   x: number; // x coorodinates of the node
   y: number; // y coordinates of the node
-  routingTable: Record<string, { hops: number; via: string }>;
+  routingTable: Record<number, { hops: number; via: number }>;
   virtual: boolean;
 }
 
 
 // Define the overall simulation state.
 export interface SimulationState {
-  nodes: Record<string, NodeState>;
+  nodes: Record<number, NodeState>;
   events: SimulationEvent[];
 }
 
@@ -26,26 +26,26 @@ export interface SimulationEvent {
 // Define the supported action types.
 export type SimulationAction =
   | { type: 'NODE_JOINED'; payload: NodeState }
-  | { type: 'NODE_LEFT'; payload: { node_id: string } }
+  | { type: 'NODE_LEFT'; payload: { node_id: number } }
   | {
     type: 'ADD_ROUTE_ENTRY';
     payload: {
-      node_id: string;
+      node_id: number;
       routing_table: {
-        Destination: string;
-        NextHop: string;
+        Destination: number;
+        NextHop: number;
         HopCount: number;
       };
     };
   }
-  | { type: 'MOVED_NODE'; payload: { node_id: string, x: number, y: number } }
+  | { type: 'MOVED_NODE'; payload: { node_id: number, x: number, y: number } }
   | {
     type: 'REMOVED_ROUTE_ENTRY';
     payload: {
-      node_id: string;
+      node_id: number;
       routing_table: {
-        Destination: string;
-        NextHop: string;
+        Destination: number;
+        NextHop: number;
         HopCount: number;
       };
     };

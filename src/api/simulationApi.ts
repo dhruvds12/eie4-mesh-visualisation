@@ -12,7 +12,7 @@ export async function createNode(lat: number, long: number): Promise<string> {
     return response.text();
 }
 
-export async function removeNode(nodeId: string): Promise<string> {
+export async function removeNode(nodeId: number): Promise<string> {
     const response = await fetch(`${apiBaseUrl}/remove`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -25,7 +25,7 @@ export async function removeNode(nodeId: string): Promise<string> {
 }
 
 
-export async function sendMessage(senderNodeId: string, destinationNodeID: string, message: string): Promise<string> {
+export async function sendMessage(senderNodeId: number, destinationNodeID: number, message: string): Promise<string> {
     const response = await fetch(`${apiBaseUrl}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -37,7 +37,7 @@ export async function sendMessage(senderNodeId: string, destinationNodeID: strin
     return response.text();
 }
 
-export async function moveNode(nodeId: string, lat: number, long: number): Promise<string> {
+export async function moveNode(nodeId: number, lat: number, long: number): Promise<string> {
     const response = await fetch(`${apiBaseUrl}/move`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
