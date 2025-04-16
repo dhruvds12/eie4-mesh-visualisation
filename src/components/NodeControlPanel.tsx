@@ -1,5 +1,19 @@
 import React, { useState } from "react";
 import { createNode, removeNode, sendMessage, moveNode } from "../api/simulationApi";
+import { useSimulationState } from "../context/SimulationContext";
+import {
+    Container,
+    Grid2,
+    Paper,
+    Typography,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    TextField,
+    Button,
+    Box,
+} from "@mui/material";
 
 const NodeControlPanel: React.FC = () => {
     const [lat, setLat] = useState(0);
@@ -48,30 +62,279 @@ const NodeControlPanel: React.FC = () => {
         }
     }
 
+    const { state } = useSimulationState();
+    // Convert the nodes object into an array.
+    const nodes = Object.values(state.nodes);
+
     return (
-        <div>
-            <h3>Create Node</h3>
-            <input type="number" value={lat} onChange={(e) => setLat(Number(e.target.value))} placeholder="Latitude" />
-            <input type="number" value={long} onChange={(e) => setLong(Number(e.target.value))} placeholder="Longitude" />
-            <button onClick={handleCreate}>Create Node</button>
+        <Container maxWidth="md" sx={{ mt: 4, mb: 4, color: "white" }}>
+            {/* Create Node Section */}
+            <Paper
+                elevation={3}
+                sx={{
+                    p: 2,
+                    mb: 3,
+                    backgroundColor: "#424242",
+                    borderRadius: 2,
+                }}
+            >
+                <Typography variant="h5" gutterBottom>
+                    Create Node
+                </Typography>
+                <Grid2 container spacing={2}>
+                    <Grid2 size={{ xs: 6 }}>
+                        <TextField
+                            label="Latitude"
+                            type="number"
+                            variant="outlined"
+                            value={lat}
+                            onChange={(e) => setLat(Number(e.target.value))}
+                            fullWidth
+                            InputLabelProps={{ style: { color: "white" } }}
+                            InputProps={{ style: { color: "white" } }}
+                        />
+                    </Grid2>
+                    <Grid2 size={{ xs: 6 }}>
+                        <TextField
+                            label="Longitude"
+                            type="number"
+                            variant="outlined"
+                            value={long}
+                            onChange={(e) => setLong(Number(e.target.value))}
+                            fullWidth
+                            InputLabelProps={{ style: { color: "white" } }}
+                            InputProps={{ style: { color: "white" } }}
+                        />
+                    </Grid2>
+                    <Grid2 size={{ xs: 12 }}>
+                        <Button variant="contained" color="primary" onClick={handleCreate} fullWidth>
+                            Create Node
+                        </Button>
+                    </Grid2>
+                </Grid2>
+            </Paper>
 
-            <h3>Remove Node</h3>
-            <input type="text" value={nodeId} onChange={(e) => setNodeId(Number(e.target.value))} placeholder="Node ID" />
-            <button onClick={handleRemove}>Remove Node</button>
+            {/* Remove Node Section */}
+            <Paper
+                elevation={3}
+                sx={{
+                    p: 2,
+                    mb: 3,
+                    backgroundColor: "#424242",
+                    borderRadius: 2,
+                }}
+            >
+                <Typography variant="h5" gutterBottom>
+                    Remove Node
+                </Typography>
+                <Grid2 container spacing={2}>
+                    <Grid2 size={{ xs: 12 }}>
+                        <FormControl fullWidth variant="outlined">
+                            <InputLabel id="remove-node-label" sx={{ color: "white" }}>
+                                Node ID
+                            </InputLabel>
+                            <Select
+                                labelId="remove-node-label"
+                                label="Node ID"
+                                value={nodeId}
+                                onChange={(e) => setNodeId(Number(e.target.value))}
+                                sx={{
+                                    color: "white",
+                                    ".MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "white",
+                                    },
+                                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "white",
+                                    },
+                                }}
+                            >
+                                {nodes.map((node) => (
+                                    <MenuItem key={node.node_id} value={node.node_id}>
+                                        {node.node_id}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid2>
+                    <Grid2 size={{ xs: 12 }}>
+                        <Button variant="contained" color="secondary" onClick={handleRemove} fullWidth>
+                            Remove Node
+                        </Button>
+                    </Grid2>
+                </Grid2>
+            </Paper>
 
-            <h3>Send Message</h3>
-            <input type="text" value={senderNodeId} onChange={(e) => setSenderNodeId(Number(e.target.value))} placeholder="Sender Node ID"/>
-            <input type="text" value={destNodeId} onChange={(e) => setDestNodeId(Number(e.target.value))} placeholder="Destination node ID"/>
-            <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Message ..."/>
-            <button onClick={handleSendMessage}>Send Message</button>
+            {/* Send Message Section */}
+            <Paper
+                elevation={3}
+                sx={{
+                    p: 2,
+                    mb: 3,
+                    backgroundColor: "#424242",
+                    borderRadius: 2,
+                }}
+            >
+                <Typography variant="h5" gutterBottom>
+                    Send Message
+                </Typography>
+                <Grid2 container spacing={2}>
 
-            <h3>Move Node</h3>
-            <input type="text" value={moveNodeId} onChange={(e) => setMoveNodeId(Number(e.target.value))} placeholder="Node ID"/>
-            <input type="number" value={latMove} onChange={(e) => setLatMove(Number(e.target.value))} placeholder="Latitude" />
-            <input type="number" value={longMove} onChange={(e) => setLongMove(Number(e.target.value))} placeholder="Longitude" />
-            <button onClick={handleMove}>Move Node</button>
-        </div>
+                    <Grid2 size={{ xs: 4 }}>
+                        <FormControl fullWidth variant="outlined">
+                            <InputLabel id="send-node-label" sx={{ color: "white" }}>
+                                Sender Node ID
+                            </InputLabel>
+                            <Select
+
+                                labelId="send-node-label"
+                                label="Sender Node ID"
+                                value={senderNodeId}
+                                onChange={(e) => setSenderNodeId(Number(e.target.value))}
+                                sx={{
+                                    color: "white",
+                                    ".MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "white",
+                                    },
+                                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "white",
+                                    },
+                                }}
+                            >
+                                {nodes.map((node) => (
+                                    <MenuItem key={node.node_id} value={node.node_id}>
+                                        {node.node_id}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+
+                    </Grid2>
+                    <Grid2 size={{ xs: 4 }}>
+                        <FormControl fullWidth variant="outlined">
+                            <InputLabel id="dest-node-label" sx={{ color: "white" }}>
+                                Destination Node ID
+                            </InputLabel>
+                            <Select
+
+                                labelId="dest-node-label"
+                                label="Destination Node ID"
+                                value={destNodeId}
+                                onChange={(e) => setDestNodeId(Number(e.target.value))}
+                                sx={{
+                                    color: "white",
+                                    ".MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "white",
+                                    },
+                                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "white",
+                                    },
+                                }}
+                            >
+                                {nodes.map((node) => (
+                                    <MenuItem key={node.node_id} value={node.node_id}>
+                                        {node.node_id}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid2>
+                    <Grid2 size={{ xs: 4 }}>
+                        <TextField
+                            label="Message"
+                            variant="outlined"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            fullWidth
+                            InputLabelProps={{ style: { color: "white" } }}
+                            InputProps={{ style: { color: "white" } }}
+                        />
+                    </Grid2>
+                    <Grid2 size={{ xs: 12 }}>
+                        <Button variant="contained" color="primary" onClick={handleSendMessage} fullWidth>
+                            Send Message
+                        </Button>
+                    </Grid2>
+                </Grid2>
+            </Paper>
+
+            {/* Move Node Section */}
+            <Paper
+                elevation={3}
+                sx={{
+                    p: 2,
+                    mb: 3,
+                    backgroundColor: "#424242",
+                    borderRadius: 2,
+                }}
+            >
+                <Typography variant="h5" gutterBottom>
+                    Move Node
+                </Typography>
+                <Grid2 container spacing={2}>
+                    <Grid2 size={{ xs: 4 }}>
+
+                        <FormControl fullWidth variant="outlined">
+                            <InputLabel id="move-node-label" sx={{ color: "white" }}>
+                                Node ID
+                            </InputLabel>
+                            <Select
+
+                                labelId="move-node-label"
+                                label="Move Node ID"
+                                value={moveNodeId}
+                                onChange={(e) => setMoveNodeId(Number(e.target.value))}
+                                sx={{
+                                    color: "white",
+                                    ".MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "white",
+                                    },
+                                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "white",
+                                    },
+                                }}
+                            >
+                                {nodes.map((node) => (
+                                    <MenuItem key={node.node_id} value={node.node_id}>
+                                        {node.node_id}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid2>
+                    <Grid2 size={{ xs: 4 }}>
+                        <TextField
+                            label="New Latitude"
+                            type="number"
+                            variant="outlined"
+                            value={latMove}
+                            onChange={(e) => setLatMove(Number(e.target.value))}
+                            fullWidth
+                            InputLabelProps={{ style: { color: "white" } }}
+                            InputProps={{ style: { color: "white" } }}
+                        />
+                    </Grid2>
+                    <Grid2 size={{ xs: 4 }}>
+                        <TextField
+                            label="New Longitude"
+                            type="number"
+                            variant="outlined"
+                            value={longMove}
+                            onChange={(e) => setLongMove(Number(e.target.value))}
+                            fullWidth
+                            InputLabelProps={{ style: { color: "white" } }}
+                            InputProps={{ style: { color: "white" } }}
+                        />
+                    </Grid2>
+                    <Grid2 size={{ xs: 12 }}>
+                        <Button variant="contained" color="secondary" onClick={handleMove} fullWidth>
+                            Move Node
+                        </Button>
+                    </Grid2>
+                </Grid2>
+            </Paper>
+        </Container>
     );
 };
+
 
 export default NodeControlPanel;

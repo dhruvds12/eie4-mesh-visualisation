@@ -8,7 +8,7 @@ import logData from './assets/log_2025-02-12_11-55-45.log?raw';
 
 function App() {
   // Toggle between live simulation and log-based simulation.
-  const [liveMode, setLiveMode] = useState<boolean>(false);
+  const [liveMode, setLiveMode] = useState<boolean>(true);
 
   const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     setLiveMode(event.target.checked);
@@ -18,7 +18,7 @@ function App() {
     <SimulationProvider>
       <Container maxWidth="md" style={{ width: '100%', height: '100vh' }}>
         <FormControlLabel
-          control={<Switch checked={liveMode} onChange={handleToggle} />}
+          control={<Switch checked={liveMode} onChange={handleToggle}  />}
           label="Live Simulation"
         />
         {liveMode ? (
