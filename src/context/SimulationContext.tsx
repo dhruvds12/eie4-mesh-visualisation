@@ -7,6 +7,7 @@ export interface NodeState {
   y: number; // y coordinates of the node
   routingTable: Record<number, { hops: number; via: number }>;
   virtual: boolean;
+  users: number[]
 }
 
 
@@ -48,8 +49,23 @@ export type SimulationAction =
         NextHop: number;
         HopCount: number;
       };
-    };
+    }
+  }
+  | {
+    type: 'CREATE_USER';
+    payload: {
+      node_id: number;
+      user_id: number;
+    }
+  }
+  | {
+    type: 'DELETE_USER';
+    payload: {
+      node_id: number;
+      user_id: number;
+    }
   };
+
 
 // The initial state for the simulation.
 const initialState: SimulationState = {
@@ -63,7 +79,8 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
     case 'NODE_JOINED': {
       const newNode: NodeState = {
         ...action.payload,
-        routingTable: action.payload.routingTable || {}
+        routingTable: action.payload.routingTable || {},
+        users: action.payload.users || []
       };
       return {
         ...state,
@@ -149,6 +166,46 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
         events: [...state.events, { type: action.type, payload: action.payload, timestamp: Date.now() }]
       }
     }
+    case 'CREATE_USER': {
+      const { node_id, user_id } = action.payload;
+      const newNodes = { ...state.nodes };
+
+      if (newNodes[node_id]) {
+        // append the new user
+        newNodes[node_id] = {
+          ...newNodes[node_id],
+          users: [...newNodes[node_id].users, user_id],
+        };
+      } else {
+        console.error(`Node ${node_id} not found for CREATE_USER`);
+      }
+
+      return {
+        ...state,
+        nodes: newNodes,
+        events: [...state.events, { type: action.type, payload: action.payload, timestamp: Date.now() }],
+      };
+    }
+    case 'DELETE_USER': {
+
+      const { node_id, user_id } = action.payload;
+      const newNodes = { ...state.nodes };
+
+      if (newNodes[node_id]) {
+        newNodes[node_id] = {
+          ...newNodes[node_id],
+          users: newNodes[node_id].users.filter((u) => u !== user_id),
+        };
+      } else {
+        console.error(`Node ${node_id} not found for DELETE_USER`);
+      }
+
+      return {
+        ...state,
+        nodes: newNodes,
+        events: [...state.events, { type: action.type, payload: action.payload, timestamp: Date.now() }],
+      };
+    }
     default:
       return state;
   }
@@ -203,7 +260,18 @@ export const SimulationProvider: React.FC<SimulationProviderProps> = ({ children
           dispatch({ type: 'MOVED_NODE', payload: data })
         } else if (data.type === 'REMOVED_ROUTE_ENTRY') {
           dispatch({ type: 'REMOVED_ROUTE_ENTRY', payload: data })
+        } else if (data.type === 'CREATE_USER') {
+          dispatch({
+            type: 'CREATE_USER',
+            payload: { node_id: data.node_id, user_id: data.user_id },
+          });
+        } else if (data.type === 'DELETE_USER') {
+          dispatch({
+            type: 'DELETE_USER',
+            payload: { node_id: data.node_id, user_id: data.user_id },
+          });
         }
+
       } catch (err) {
         console.error("Error processing event:", err);
       }

@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { createNode, removeNode, sendMessage, moveNode } from "../api/simulationApi";
+import {
+    createNode,
+    removeNode,
+    sendMessage,
+    moveNode,
+    createUser,
+    deleteUser,
+    sendUserMessage,
+    moveUser,
+} from "../api/simulationApi";
 import { useSimulationState } from "../context/SimulationContext";
 import {
     Container,
@@ -12,19 +21,31 @@ import {
     MenuItem,
     TextField,
     Button,
-    Box,
 } from "@mui/material";
 
 const NodeControlPanel: React.FC = () => {
     const [lat, setLat] = useState(0);
-    const [latMove, setLatMove] = useState(0);
     const [long, setLong] = useState(0);
-    const [longMove, setLongMove] = useState(0);
     const [nodeId, setNodeId] = useState(0);
+    const [senderNodeId, setSenderNodeId] = useState(0);
+    const [destNodeId, setDestNodeId] = useState(0);
+    const [message, setMessage] = useState("");
+    const [latMove, setLatMove] = useState(0);
+    const [longMove, setLongMove] = useState(0);
     const [moveNodeId, setMoveNodeId] = useState(0);
-    const [senderNodeId, setSenderNodeId] = useState(0)
-    const [destNodeId, setDestNodeId] = useState(0)
-    const [message, setMessage] = useState('')
+
+    const [createUserNodeId, setCreateUserNodeId] = useState(0);
+    const [deleteUserNodeId, setDeleteUserNodeId] = useState(0);
+    const [deleteUserId, setDeleteUserId] = useState(0);
+
+    const [sendUserNodeId, setSendUserNodeId] = useState(0);
+    const [sendUserId, setSendUserId] = useState(0);
+    const [destUserId, setDestUserId] = useState(0);
+    const [userMsg, setUserMsg] = useState("");
+
+    const [moveUserNodeId, setMoveUserNodeId] = useState(0);
+    const [moveUserId, setMoveUserId] = useState(0);
+    const [moveTargetNodeId, setMoveTargetNodeId] = useState(0);
 
     const handleCreate = async () => {
         try {
@@ -62,9 +83,57 @@ const NodeControlPanel: React.FC = () => {
         }
     }
 
+    const handleCreateUser = async () => {
+        try {
+            const res = await createUser(createUserNodeId);
+            console.log("User created:", res);
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleDeleteUser = async () => {
+        try {
+            const res = await deleteUser(deleteUserNodeId, deleteUserId);
+            console.log("User deleted:", res);
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleSendUserMessage = async () => {
+        try {
+            const res = await sendUserMessage(
+                sendUserNodeId,
+                sendUserId,
+                destUserId,
+                userMsg
+            );
+            console.log("User message sent:", res);
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleMoveUser = async () => {
+        try {
+            const res = await moveUser(
+                moveUserNodeId,
+                moveUserId,
+                moveTargetNodeId
+            );
+            console.log("User moved:", res);
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+
     const { state } = useSimulationState();
     // Convert the nodes object into an array.
     const nodes = Object.values(state.nodes);
+
+    const allUsers = nodes.flatMap((n) => n.users);
 
     return (
         <Container maxWidth="md" sx={{ mt: 4, mb: 4, color: "white" }}>
@@ -331,6 +400,145 @@ const NodeControlPanel: React.FC = () => {
                         </Button>
                     </Grid2>
                 </Grid2>
+            </Paper>
+
+            {/* ─── Create User ──────────────────────────────────────────────────────── */}
+            <Paper elevation={3} sx={{ p: 2, mb: 3, backgroundColor: "#424242", borderRadius: 2 }}>
+                <Typography variant="h5" gutterBottom>Create User</Typography>
+                <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
+                    <InputLabel>Node ID</InputLabel>
+                    <Select
+                        value={createUserNodeId}
+                        onChange={(e) => setCreateUserNodeId(Number(e.target.value))}
+                    >
+                        {nodes.map((n) => (
+                            <MenuItem key={n.node_id} value={n.node_id}>{n.node_id}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <Button variant="contained" color="primary" onClick={handleCreateUser} fullWidth>
+                    Create User
+                </Button>
+            </Paper>
+
+            {/* ─── Delete User ──────────────────────────────────────────────────────── */}
+            <Paper elevation={3} sx={{ p: 2, mb: 3, backgroundColor: "#424242", borderRadius: 2 }}>
+                <Typography variant="h5" gutterBottom>Delete User</Typography>
+                <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
+                    <InputLabel>Node ID</InputLabel>
+                    <Select
+                        value={deleteUserNodeId}
+                        onChange={(e) => setDeleteUserNodeId(Number(e.target.value))}
+                    >
+                        {nodes.map((n) => (
+                            <MenuItem key={n.node_id} value={n.node_id}>{n.node_id}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
+                    <InputLabel>User ID</InputLabel>
+                    <Select
+                        value={deleteUserId}
+                        onChange={(e) => setDeleteUserId(Number(e.target.value))}
+                    >
+                        {(state.nodes[deleteUserNodeId]?.users || []).map((u) => (
+                            <MenuItem key={u} value={u}>{u}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <Button variant="contained" color="secondary" onClick={handleDeleteUser} fullWidth>
+                    Delete User
+                </Button>
+            </Paper>
+
+            {/* ─── Send User→User Message ──────────────────────────────────────────── */}
+            <Paper elevation={3} sx={{ p: 2, mb: 3, backgroundColor: "#424242", borderRadius: 2 }}>
+                <Typography variant="h5" gutterBottom>Send User Message</Typography>
+                <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
+                    <InputLabel>From Node</InputLabel>
+                    <Select
+                        value={sendUserNodeId}
+                        onChange={(e) => setSendUserNodeId(Number(e.target.value))}
+                    >
+                        {nodes.map((n) => (
+                            <MenuItem key={n.node_id} value={n.node_id}>{n.node_id}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
+                    <InputLabel>From User</InputLabel>
+                    <Select
+                        value={sendUserId}
+                        onChange={(e) => setSendUserId(Number(e.target.value))}
+                    >
+                        {(state.nodes[sendUserNodeId]?.users || []).map((u) => (
+                            <MenuItem key={u} value={u}>{u}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
+                    <InputLabel>To User</InputLabel>
+                    <Select
+                        value={destUserId}
+                        onChange={(e) => setDestUserId(Number(e.target.value))}
+                    >
+                        {allUsers.map((u) => (
+                            <MenuItem key={u} value={u}>{u}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <TextField
+                    label="Message"
+                    variant="outlined"
+                    value={userMsg}
+                    onChange={(e) => setUserMsg(e.target.value)}
+                    fullWidth
+                    sx={{ mb: 2 }}
+                />
+                <Button variant="contained" color="primary" onClick={handleSendUserMessage} fullWidth>
+                    Send User Message
+                </Button>
+            </Paper>
+
+            {/* ─── Move User ───────────────────────────────────────────────────────── */}
+            <Paper elevation={3} sx={{ p: 2, backgroundColor: "#424242", borderRadius: 2 }}>
+                <Typography variant="h5" gutterBottom>Move User</Typography>
+                <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
+                    <InputLabel>From Node</InputLabel>
+                    <Select
+                        value={moveUserNodeId}
+                        onChange={(e) => setMoveUserNodeId(Number(e.target.value))}
+                    >
+                        {nodes.map((n) => (
+                            <MenuItem key={n.node_id} value={n.node_id}>{n.node_id}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
+                    <InputLabel>User ID</InputLabel>
+                    <Select
+                        value={moveUserId}
+                        onChange={(e) => setMoveUserId(Number(e.target.value))}
+                    >
+                        {(state.nodes[moveUserNodeId]?.users || []).map((u) => (
+                            <MenuItem key={u} value={u}>{u}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
+                    <InputLabel>To Node</InputLabel>
+                    <Select
+                        value={moveTargetNodeId}
+                        onChange={(e) => setMoveTargetNodeId(Number(e.target.value))}
+                    >
+                        {nodes.map((n) => (
+                            <MenuItem key={n.node_id} value={n.node_id}>{n.node_id}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <Button variant="contained" color="secondary" onClick={handleMoveUser} fullWidth>
+                    Move User
+                </Button>
             </Paper>
         </Container>
     );

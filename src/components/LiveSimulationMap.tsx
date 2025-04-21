@@ -91,6 +91,17 @@ const LiveSimulationMap: React.FC = () => {
                           )}
                         </tbody>
                       </table>
+                               <br />
+                      <strong>Connected Users:</strong>
+                      {node.users.length > 0 ? (
+                        <ul style={{ paddingLeft: 16, margin: '4px 0' }}>
+                          {node.users.map((u) => (
+                            <li key={u}>User {u}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span> None</span>
+                      )}
 
                     </div>
                   </Popup>
