@@ -4,6 +4,8 @@ import { SimNode, SimulationState } from '../types/simulationTypes';
 const createNodeRegex = /\[sim\]\s*Created new node ID:\s*([^,]+), x:\s*([\d.-]+), y:\s*([\d.-]+)/;
 const directNeighborRegex = /\[routing table\].*Node\s+([^ ]+)\s+\(router\)\s*->\s*direct neighbor:\s*([^\s]+)/;
 const updatedRouteRegex = /\[routing table\].*Node\s+([^ ]+)\s+\(router\)\s*->\s*updated route to\s+([^ ]+)\s+via\s+([^ ]+)\s+\(hop count\s+(\d+)\)/;
+const removeNodeRegex = /\[sim\]\s*Node\s*([\w-]+):\s*leaving network\./;
+
 
 /**
  * Parses the log string, producing an array of SimulationStates (snapshots).
@@ -29,6 +31,11 @@ export function buildSimulationStates(logString: string): SimulationState[] {
       currentNodes.push(node);
     }
     return node;
+  }
+
+  // Helper: delete node from currentNodes 
+  function deleteNode(nodeId: string): void {
+    currentNodes = currentNodes.filter((n) => n.id !== nodeId);
   }
 
   // Iterate over lines, looking for "[sim]"
@@ -83,6 +90,13 @@ export function buildSimulationStates(logString: string): SimulationState[] {
         hops: hopCount,
         via: viaId
       };
+    }
+
+    // Node leaving network
+    match = line.match(removeNodeRegex);
+    if (match) {
+      const nodeId = match[1];
+      deleteNode(nodeId);
     }
 
     // Push new snapshot
