@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 
+export interface MessageEntry {
+  from: number;        // sender node-id
+  content: string;     // the message string
+  timestamp: number;   // when it was delivered (ms since epoch)
+}
+
 // Node struct
 export interface NodeState {
   node_id: number;
@@ -8,6 +14,7 @@ export interface NodeState {
   routingTable: Record<number, { hops: number; via: number }>;
   virtual: boolean;
   users: number[]
+  messages: MessageEntry[];
 }
 
 
@@ -64,6 +71,10 @@ export type SimulationAction =
       node_id: number;
       user_id: number;
     }
+  }
+  | {
+    type: 'MESSAGE_DELIVERED';
+    payload: { node_id: number; from: number; content: string; timestamp: number };
   };
 
 
@@ -80,7 +91,8 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       const newNode: NodeState = {
         ...action.payload,
         routingTable: action.payload.routingTable || {},
-        users: action.payload.users || []
+        users: action.payload.users || [],
+        messages: [],  
       };
       return {
         ...state,
@@ -206,6 +218,32 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
         events: [...state.events, { type: action.type, payload: action.payload, timestamp: Date.now() }],
       };
     }
+    case 'MESSAGE_DELIVERED': {
+      const { node_id, from, content, timestamp } = action.payload;
+      const newNodes = { ...state.nodes };
+
+      if (!newNodes[node_id]) {
+        console.error(`Node ${node_id} not found for MESSAGE_DELIVERED`);
+        return state;
+      }
+
+      // ensure messages array exists
+      const msgs = newNodes[node_id].messages ?? [];
+      newNodes[node_id] = {
+        ...newNodes[node_id],
+        messages: [...msgs, { from, content, timestamp }],
+      };
+
+      return {
+        ...state,
+        nodes: newNodes,
+        events: [
+          ...state.events,
+          { type: action.type, payload: action.payload, timestamp: Date.now() },
+        ],
+      };
+    }
+
     default:
       return state;
   }
@@ -270,7 +308,18 @@ export const SimulationProvider: React.FC<SimulationProviderProps> = ({ children
             type: 'DELETE_USER',
             payload: { node_id: data.node_id, user_id: data.user_id },
           });
+        } else if (data.type === 'MESSAGE_DELIVERED') {
+          dispatch({
+            type: 'MESSAGE_DELIVERED',
+            payload: {
+              node_id: data.node_id,
+              from: data.other_node_id,
+              content: data.payload,
+              timestamp: data.timestamp,
+            },
+          });
         }
+
 
       } catch (err) {
         console.error("Error processing event:", err);

@@ -91,7 +91,7 @@ const LiveSimulationMap: React.FC = () => {
                           )}
                         </tbody>
                       </table>
-                               <br />
+                      <br />
                       <strong>Connected Users:</strong>
                       {node.users.length > 0 ? (
                         <ul style={{ paddingLeft: 16, margin: '4px 0' }}>
@@ -102,6 +102,31 @@ const LiveSimulationMap: React.FC = () => {
                       ) : (
                         <span> None</span>
                       )}
+
+                      <br />
+                      <strong>Messages Received:</strong>
+                      <div
+                        style={{
+                          maxHeight: '140px',
+                          overflowY: 'auto',
+                          border: '1px solid #ddd',
+                          padding: '4px',
+                          marginTop: '4px',
+                        }}
+                      >
+                        {node.messages.length ? (
+                          <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
+                            {node.messages.map((m, idx) => (
+                              <li key={idx} style={{ marginBottom: 4 }}>
+                                <strong>{m.from}:</strong>&nbsp;{m.content}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <span>No messages</span>
+                        )}
+                      </div>
+
 
                     </div>
                   </Popup>
